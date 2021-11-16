@@ -1,0 +1,12 @@
+{
+    "client_id": "client_id",
+    "client_secret": "client_secret",
+    "access_token": "access_token",
+    "watchlist": [
+        "user",
+        "user"
+    ],
+    "discord_token": "Discord Bot Token",
+    "notify_channel": channel_id,
+    "check_channel": channel_id
+}
