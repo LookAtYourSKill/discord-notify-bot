@@ -5,7 +5,6 @@ import datetime
 
 import asyncio
 import discord
-import requests
 from discord.ext import commands
 from discord.ext.tasks import loop
 
@@ -46,27 +45,22 @@ async def help(ctx):
                           color=discord.Color.blurple(), timestamp=datetime.datetime.utcnow())
     embed.add_field(name='__$streamer__',
                     value='`Display all streamer, which are watched`\n'
-                          '\n'
                           '**Aliases:** ``watchlist``',
                     inline=False)
     embed.add_field(name='__$addstreamer [streamer_name]__',
                     value='`Add a streamer to the watchlist`\n'
-                          '\n'
-                          '**Aliases:** ``streameradd, add``',
+                          '**Aliases:** ``streameradd, add, add_streamer``',
                     inline=False)
     embed.add_field(name='__$removestreamer [streamer_name]__',
                     value='`Remove a streamer from the watchlist`\n'
-                          '\n'
                           '**Aliases:** ``streamerremove, rm, remove``',
                     inline=False)
-    embed.add_field(name='$streamcheck',
+    embed.add_field(name='__$streamcheck__',
                     value='`Check all streams, within one message`\n'
-                          '\n'
-                          '**Aliases:** ``checkstreams, streamcheck``',
+                          '**Aliases:** ``checkstreams, streamcheck, check``',
                     inline=False)
     embed.add_field(name='__$ping__',
                     value='`Get the Ping from the bot`\n'
-                          '\n'
                           '**Aliases:** ``/``',
                     inline=False)
     embed.set_thumbnail(url=bot.user.avatar_url)
@@ -74,7 +68,7 @@ async def help(ctx):
     await ctx.send(embed=embed)
 
 
-@bot.command(name='check_streams_one_message', aliases=['streamcheck', 'checkstreams'])
+@bot.command(name='check_streams_one_message', aliases=['streamcheck', 'checkstreams', 'check'])
 @commands.is_owner()
 async def check_streams_one_message(ctx):
     users = get_users(config["watchlist"])
@@ -89,13 +83,14 @@ async def check_streams_one_message(ctx):
             embed.add_field(name=f'Name : {stream["user_name"]}',
                             value=f'**Type :** ``{stream["type"]}``\n'
                                   f'**Title :** __{stream["title"]}__\n'
+                                  f'**Game** : ``{stream["game_name"]}``\n'
                                   f'**Link :** https://www.twitch.tv/{stream["user_login"]}',
                             inline=False)
     await ctx.send(f'{ctx.author.mention} Dein Stream Check. Es sind insgesamt **{len(streams)} Streamer Live!**',
                    embed=embed)
 
 
-@bot.command(name='addstreamer', aliases=['add_streamer', 'streamer_add', 'streameradd'])
+@bot.command(name='addstreamer', aliases=['streameradd', 'add'])
 @commands.is_owner()
 async def addstreamer(ctx, streamer):
     if not streamer:
@@ -130,7 +125,7 @@ async def addstreamer(ctx, streamer):
         await ctx.message.delete()
 
 
-@bot.command(name='removestreamer', aliases=['rmstreamer', 'rm_streamer'])
+@bot.command(name='removestreamer', aliases=['rm', 'remove'])
 @commands.is_owner()
 async def remove_streamer(ctx, streamer):
     if not streamer:
@@ -202,10 +197,11 @@ async def on_command_error(ctx, error):
         await ctx.message.delete()
 
     else:
-        await ctx.send(f'__Unknown Error__... Here it is\n'
-                       f'```py\n'
-                       f'{error}\n'
-                       f'```')
+        embed = discord.Embed(description=f'**__Unknown Error__... Here it is :**\n'
+                                          f'\n'
+                                          f'`{error}`',
+                                          color=discord.Color.red())
+        await ctx.send(embed=embed)
 
 @loop(seconds=90)
 async def check_twitch_online_streamers():
@@ -222,12 +218,11 @@ async def check_twitch_online_streamers():
         # send the message with the notification in the channel
 
         embed = discord.Embed(title=f'__{notification["title"]}__',
+                              description=f'Playing {notification["game_name"]} for **{notification["viewer_count"]}** viewer!\n'
+                                          f'[Click here](https://twitch.tv/{notification["user_login"]})',
                               url=f'https://twitch.tv/{notification["user_login"]}',
                               timestamp=datetime.datetime.utcnow(),
                               color=discord.Color.purple())
-        embed.add_field(
-            name=f'Playing {notification["game_name"]} for {notification["viewer_count"]} viewer!',
-            value=f'[Click here](https://twitch.tv/{notification["user_login"]})')
         # embed.add_field(
         #    name=f'Streaming for {notification["viewer_count"]} viewer',
         #    value=f'[go to Stream](https://twitch.tv/{notification["user_login"]})')
