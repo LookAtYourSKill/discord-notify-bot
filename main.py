@@ -3,8 +3,8 @@
 import json
 import datetime
 
+import asyncio
 import discord
-import requests
 from discord.ext import commands
 from discord.ext.tasks import loop
 
@@ -41,41 +41,26 @@ async def ping(ctx):
 # help command
 @bot.command()
 async def help(ctx):
-    embed = discord.Embed(description=f'Help Command | MyPing: **{round(bot.latency * 1000)}ms**',
+    embed = discord.Embed(description=f'Help Command | My Ping: **{round(bot.latency * 1000)}ms**',
                           color=discord.Color.blurple(), timestamp=datetime.datetime.utcnow())
     embed.add_field(name='__$streamer__',
                     value='`Display all streamer, which are watched`\n'
-                          '\n'
                           '**Aliases:** ``watchlist``',
                     inline=False)
     embed.add_field(name='__$addstreamer [streamer_name]__',
                     value='`Add a streamer to the watchlist`\n'
-                          '\n'
-                          '**Aliases:** ``add_streamer, streamer_add, streameradd``',
+                          '**Aliases:** ``streameradd, add, add_streamer``',
                     inline=False)
     embed.add_field(name='__$removestreamer [streamer_name]__',
                     value='`Remove a streamer from the watchlist`\n'
-                          '\n'
-                          '**Aliases:** ``rmstreamer, rm_streamer``',
+                          '**Aliases:** ``streamerremove, rm, remove``',
                     inline=False)
-    embed.add_field(name='__$check_streams_privat__',
-                    value='`Check which streamer is live (send privat message)`\n'
-                          '\n'
-                          '**Aliases:** ``check_streams, checkstreams, checkstreamsprivat, csp, checkstreams2, streamcheck2``',
-                    inline=False)
-    embed.add_field(name='__$check_streams_channel__',
-                    value='`Check which streamer is live (send message in channel)`\n'
-                          '\n'
-                          '**Aliases:** ``check_streams_in_channel, checkstreamschannel, csc, checkstreams1, streamcheck1``',
-                    inline=False)
-    embed.add_field(name='$check_streams_one_message',
+    embed.add_field(name='__$streamcheck__',
                     value='`Check all streams, within one message`\n'
-                          '\n'
-                          '**Aliases:** ``check_streams_one_message, checkstreamsonemessage, csom, checkstreams, streamcheck``',
+                          '**Aliases:** ``checkstreams, streamcheck, check``',
                     inline=False)
     embed.add_field(name='__$ping__',
                     value='`Get the Ping from the bot`\n'
-                          '\n'
                           '**Aliases:** ``/``',
                     inline=False)
     embed.set_thumbnail(url=bot.user.avatar_url)
@@ -83,84 +68,29 @@ async def help(ctx):
     await ctx.send(embed=embed)
 
 
-@bot.command(name='check_streams_one_message', aliases=['checkstreamsonemessage', 'streamcheck', 'checkstreams'])
+@bot.command(name='check_streams_one_message', aliases=['streamcheck', 'checkstreams', 'check'])
 @commands.is_owner()
 async def check_streams_one_message(ctx):
     users = get_users(config["watchlist"])
     streams = get_streams(users)
 
-    embed = discord.Embed(title='Stream Check')
+    embed = discord.Embed(title='Who is Live?')
     for stream in streams.values():
-        embed.add_field(name=f'Name : {stream["user_name"]}',
-                        value=f'**Type :** ``{stream["type"]}``\n'
-                              f'**Title :** __{stream["title"]}__\n'
-                              f'**Link :** https://www.twitch.tv/{stream["user_login"]}',
-                        inline=False)
-
+        if not stream:
+            embed.add_field(name='__Nobody is Live!__', value='No streamer from your watchlist is live!')
+            await ctx.send(embed=embed)
+        else:
+            embed.add_field(name=f'Name : {stream["user_name"]}',
+                            value=f'**Type :** ``{stream["type"]}``\n'
+                                  f'**Title :** __{stream["title"]}__\n'
+                                  f'**Game** : ``{stream["game_name"]}``\n'
+                                  f'**Link :** https://www.twitch.tv/{stream["user_login"]}',
+                            inline=False)
     await ctx.send(f'{ctx.author.mention} Dein Stream Check. Es sind insgesamt **{len(streams)} Streamer Live!**',
                    embed=embed)
 
 
-@bot.command(name='check_streams_privat', aliases=['checkstreamsprivat', 'csp', 'streamcheck2', 'checkstreams2'])
-async def check_streams_privat(ctx):
-    users = get_users(config["watchlist"])
-    streams = get_streams(users)
-    if len(streams) > 0:
-        await ctx.author.send(
-            f'{ctx.author.mention} Dein Stream Check. Es sind insgesamt **{len(streams)} Streamer Live!**')
-    else:
-        await ctx.author.send(
-            f'{ctx.author.mention} Dein Stream Check. Es ist **kein Streamer aus deiner Watchlist Live!**')
-
-    for is_streaming in streams.values():
-        if not is_streaming:
-            embed = discord.Embed(title='No Streamer is Live!',
-                                  description='No streamer from your watchlist is live!',
-                                  color=discord.Color.red())
-            await ctx.author.send(embed=embed)
-        else:
-            embed = discord.Embed(title=f'Stream Check von {is_streaming["user_name"]}',
-                                  url=f'https://twitch.tv/{is_streaming["user_login"]}')
-            embed.add_field(name=f'Streamer : {is_streaming["user_name"]}',
-                            value=f'**Type :** ``{is_streaming["type"]}``\n'
-                                  f'**Title :** __{is_streaming["title"]}__', )
-            await ctx.author.send(embed=embed)
-
-
-@bot.command(name='check_streams_channel',
-             aliases=['check_streams_in_channel', 'checkstreamschannel', 'csc', 'streamcheck1', 'checkstreams1'])
-@commands.is_owner()
-async def check_streams_channel(ctx):
-    with open('config.json', 'r') as config_file:
-        config = json.load(config_file)
-
-    channel = bot.get_channel(id=config["check_channel"])
-
-    users = get_users(config["watchlist"])
-    streams = get_streams(users)
-    if len(streams) > 0:
-        await channel.send(
-            f'{ctx.author.mention} hat ein Stream Check durchgeführt. Es sind insgesamt **{len(streams)} Streamer Live!**')
-    else:
-        await channel.send(
-            f'{ctx.author.mention} hat ein Stream Check durchgeführt. Es ist **kein Streamer aus deiner Watchlist Live!**')
-
-    for is_streaming in streams.values():
-        if not is_streaming:
-            embed = discord.Embed(title='No Streamer is Live!',
-                                  description='No streamer from your watchlist is live!',
-                                  color=discord.Color.red())
-            await channel.send(embed=embed)
-        else:
-            embed = discord.Embed(title=f'Stream Check von {is_streaming["user_name"]}',
-                                  url=f'https://twitch.tv/{is_streaming["user_login"]}')
-            embed.add_field(name=f'Streamer : {is_streaming["user_name"]}',
-                            value=f'**Type :** ``{is_streaming["type"]}``\n'
-                                  f'**Title :** __{is_streaming["title"]}__', )
-            await channel.send(embed=embed)
-
-
-@bot.command(name='addstreamer', aliases=['add_streamer', 'streamer_add', 'streameradd'])
+@bot.command(name='addstreamer', aliases=['streameradd', 'add'])
 @commands.is_owner()
 async def addstreamer(ctx, streamer):
     if not streamer:
@@ -195,7 +125,7 @@ async def addstreamer(ctx, streamer):
         await ctx.message.delete()
 
 
-@bot.command(name='removestreamer', aliases=['rmstreamer', 'rm_streamer'])
+@bot.command(name='removestreamer', aliases=['rm', 'remove'])
 @commands.is_owner()
 async def remove_streamer(ctx, streamer):
     if not streamer:
@@ -266,6 +196,12 @@ async def on_command_error(ctx, error):
         await ctx.send(embed=embed, delete_after=5)
         await ctx.message.delete()
 
+    else:
+        embed = discord.Embed(description=f'**__Unknown Error__... Here it is :**\n'
+                                          f'\n'
+                                          f'`{error}`',
+                                          color=discord.Color.red())
+        await ctx.send(embed=embed)
 
 @loop(seconds=90)
 async def check_twitch_online_streamers():
@@ -282,12 +218,11 @@ async def check_twitch_online_streamers():
         # send the message with the notification in the channel
 
         embed = discord.Embed(title=f'__{notification["title"]}__',
+                              description=f'Playing {notification["game_name"]} for **{notification["viewer_count"]}** viewer!\n'
+                                          f'[Click here](https://twitch.tv/{notification["user_login"]})',
                               url=f'https://twitch.tv/{notification["user_login"]}',
                               timestamp=datetime.datetime.utcnow(),
                               color=discord.Color.purple())
-        embed.add_field(
-            name=f'Playing {notification["game_name"]} for {notification["viewer_count"]} viewer!',
-            value=f'[Click here](https://twitch.tv/{notification["user_login"]})')
         # embed.add_field(
         #    name=f'Streaming for {notification["viewer_count"]} viewer',
         #    value=f'[go to Stream](https://twitch.tv/{notification["user_login"]})')
@@ -297,6 +232,7 @@ async def check_twitch_online_streamers():
         embed.set_image(
             url=f'https://static-cdn.jtvnw.net/previews-ttv/live_user_{notification["user_login"]}-1920x1080.jpg')
         embed.set_footer(text=f'Discord Notify Bot')
+        await asyncio.sleep(5)
         await channel.send(f'||@everyone|| {notification["user_name"]} ist Live!\n'
                            f'https://twitch.tv/{notification["user_login"]}', embed=embed)
 
