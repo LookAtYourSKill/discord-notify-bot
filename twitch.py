@@ -47,6 +47,25 @@ def get_users(login_names):
     # just give out the name and the id from the json
     return {entry["login"]: entry["id"] for entry in response.json()["data"]}
 
+#def get_profile_picture(login_names):
+#    params = {
+#        "login": login_names
+#    }
+
+#    headers = {
+#        "Authorization": "Bearer {}".format(config["access_token"]),
+#        "Client-Id": config["client_id"]
+#    }
+
+    # get a response from twitch
+#    response = requests.get("https://api.twitch.tv/helix/users", params=params, headers=headers)
+
+    # just to get all the infos about the streamers
+    # return response.json()
+
+    # just give out the name and the id from the json
+#    return {entry["profile_image_url"] for entry in response.json()["data"]}
+
 
 # print out the detailed information
 # users = get_users(config["watchlist"])
