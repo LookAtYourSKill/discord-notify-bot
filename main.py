@@ -83,9 +83,8 @@ async def check_streams_one_message(ctx):
 
     embed = discord.Embed(title='Who is Live?', color=discord.Color.purple())
     for stream in streams.values():
-        if not stream:
-            embed.add_field(name='__Nobody is Live!__', value='No streamer from your watchlist is live!')
-            await ctx.send(embed=embed)
+        if not streams:
+            embed.add_field(name='__Nobody is Live!__', value='No streamer from your watchlist is live!', inline=False)
         else:
             embed.add_field(name=f'Name : {stream["user_name"]}',
                             value=f'**Title :** __{stream["title"]}__\n'
