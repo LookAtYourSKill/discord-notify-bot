@@ -138,7 +138,7 @@ async def check_streams_one_message(ctx):
                         **Title :** __{stream["title"]}__
                         **Viewer :** ``{stream["viewer_count"]}``
                         **Game :** ``{stream["game_name"]}``
-                        **Link :** https://www.twitch.tv/{stream["user_login"]}'
+                        **Link :** https://www.twitch.tv/{stream["user_login"]}
                     """
                 ),
                 inline=False
