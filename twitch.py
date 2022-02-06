@@ -45,8 +45,8 @@ def get_users(login_names):
     return {entry["login"]: entry["id"] for entry in response.json()["data"]}
 
 
-user_test = get_users(data["watchlist"])
-print('User: ', user_test)
+# user_test = get_users(data["watchlist"])
+# print('User: ', user_test)
 
 
 def get_profile_image(login_names):
@@ -67,8 +67,8 @@ def get_profile_image(login_names):
     return {entry["login"]: entry["profile_image_url"] for entry in response.json()["data"]}
 
 
-profile_pictures = get_profile_image(data["watchlist"])
-print('Profile Pictures: ', profile_pictures)
+# profile_pictures = get_profile_image(data["watchlist"])
+# print('Profile Pictures: ', profile_pictures)
 
 
 def get_streams(users):
@@ -88,9 +88,9 @@ def get_streams(users):
     return {entry["user_login"]: entry for entry in response.json()["data"]}
 
 
-users_test = get_users(data["watchlist"])
-stream_test = get_streams(users_test)
-print('Stream: ', stream_test)
+# users_test = get_users(data["watchlist"])
+# stream_test = get_streams(users_test)
+# print('Stream: ', stream_test)
 
 
 online_users = []
@@ -106,8 +106,8 @@ def get_notifications():
         if user_name in streams and user_name not in online_users:
             giga_time = datetime.strptime(streams[user_name]['started_at'], "%Y-%m-%dT%H:%M:%SZ")
             started_at = time.mktime(giga_time.timetuple()) + giga_time.microsecond / 1E6
-            print(time.time() - started_at)
-            if time.time() - started_at < 180:
+            print(time.time() - started_at, user_name)
+            if time.time() - started_at < 4000:
                 notifications.append(streams[user_name])
                 online_users.append(user_name)
 

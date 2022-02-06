@@ -1,3 +1,4 @@
+from cgitb import text
 import json
 import datetime
 from textwrap import dedent
@@ -139,6 +140,7 @@ async def check_streams_one_message(ctx):
                         **Viewer :** ``{stream["viewer_count"]}``
                         **Game :** ``{stream["game_name"]}``
                         **Link :** https://www.twitch.tv/{stream["user_login"]}
+                        >-------------------------------------------------------------------------<
                     """
                 ),
                 inline=False
@@ -325,8 +327,20 @@ async def check_twitch_online_streamers():
             f'https://twitch.tv/{notification["user_login"]}', embed=embed
         )
 
-        # -----------------------------------------------------------------------------------------------------------------------
+@bot.event
+async def on_command_error(self, ctx, error):
+    if hasattr(ctx.command, 'on_error'):
+        return
 
+    error = getattr(error, 'original', error)
+
+    if isinstance(error, commands.CommandNotFound):
+        if isinstance(error, commands.CommandNotFound):
+            embed = discord.Embed(
+                description=f'**Unbekannter Command!** Überprüfe deine Eingabe mit `tv!help`',
+                color=discord.Color.red()
+            )
+            await ctx.send(embed=embed)
 
 with open('config.json', 'r', encoding='UTF-8') as file:
     config = json.load(file)
