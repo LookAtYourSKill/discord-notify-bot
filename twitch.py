@@ -1,10 +1,14 @@
 import json
+import time
 from datetime import datetime
 import requests
 
 # -----------------------------------------------------------------------------------------------------------------------
 
-with open("config.json", 'r') as config_file:
+with open("data.json", 'r') as data_file:
+    data = json.load(data_file)
+
+with open('config.json', 'r') as config_file:
     config = json.load(config_file)
 
 
@@ -39,6 +43,10 @@ def get_users(login_names):
     return {entry["login"]: entry["id"] for entry in response.json()["data"]}
 
 
+user_test = get_users(data["watchlist"])
+print('User: ', user_test)
+
+
 # -----------------------------------------------------------------------------------------------------------------------
 
 def get_profile_image(login_names):
@@ -53,6 +61,10 @@ def get_profile_image(login_names):
 
     response = requests.get("https://api.twitch.tv/helix/users", params=params, headers=headers)
     return {entry["login"]: entry["profile_image_url"] for entry in response.json()["data"]}
+
+
+profile_pictures = get_profile_image(data["watchlist"])
+print('Profile Pictures: ', profile_pictures)
 
 
 # -----------------------------------------------------------------------------------------------------------------------
@@ -70,27 +82,28 @@ def get_streams(users):
     return {entry["user_login"]: entry for entry in response.json()["data"]}
 
 
+users_test = get_users(data["watchlist"])
+stream_test = get_streams(users_test)
+print('Stream: ', stream_test)
+
 # -----------------------------------------------------------------------------------------------------------------------
 
-online_users = {}
+online_users = []
 
 
 def get_notifications():
-    users = get_users(config["watchlist"])
+    global online_users
+    users = get_users(data["watchlist"])
     streams = get_streams(users)
 
     notifications = []
-    for user_name in config["watchlist"]:
-
-        if user_name not in online_users:
-            online_users[user_name] = datetime.utcnow()
-
-        if user_name not in streams:
-            online_users[user_name] = None
-        else:
-            started_at = datetime.strptime(streams[user_name]["started_at"], "%Y-%m-%dT%H:%M:%SZ")
-            if online_users[user_name] is None or started_at > online_users[user_name]:
+    for user_name in data["watchlist"]:
+        if user_name in streams and user_name not in online_users:
+            t = datetime.strptime(streams[user_name]['started_at'], "%Y-%m-%dT%H:%M:%SZ")
+            started_at = time.mktime(t.timetuple()) + t.microsecond / 1E6
+            print(time.time() - started_at)
+            if time.time() - started_at < 180:
                 notifications.append(streams[user_name])
-                online_users[user_name] = started_at
+                online_users.append(user_name)
 
     return notifications

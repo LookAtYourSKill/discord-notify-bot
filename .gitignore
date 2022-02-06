@@ -1,4 +1,5 @@
 /config.json
+/data.json
 /twitch get_streams_example.json
 /twitch_get_user_example.json
 /.idea/inspectionProfiles/
