@@ -1,5 +1,4 @@
 /config.json
-/data.json
 /twitch get_streams_example.json
 /twitch_get_user_example.json
 /.idea/inspectionProfiles/
@@ -8,3 +7,4 @@
 /.idea/Discord Notify Bot.iml
 /.idea/modules.xml
 /.idea/vcs.xml
+/data.json
