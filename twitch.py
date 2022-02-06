@@ -3,7 +3,6 @@ import time
 from datetime import datetime
 import requests
 
-# -----------------------------------------------------------------------------------------------------------------------
 
 with open("data.json", 'r') as data_file:
     data = json.load(data_file)
@@ -12,22 +11,21 @@ with open('config.json', 'r') as config_file:
     config = json.load(config_file)
 
 
-# -----------------------------------------------------------------------------------------------------------------------
-
 # def get_app_access_token():
-#    params = {
-#        "client_id": config["client_id"],
-#        "client_secret": config["client_secret"],
-#        "grant_type": "client_credentials"
-#    }
+#     params = {
+#         "client_id": config["client_id"],
+#         "client_secret": config["client_secret"],
+#         "grant_type": "client_credentials"
+#     }
 
-#    response = requests.post("https://id.twitch.tv/oauth2/token", params=params)
-#    access_token = response.json()["access_token"]
-#    return access_token
+#     response = requests.post("https://id.twitch.tv/oauth2/token", params=params)
+#     access_token = response.json()["access_token"]
+#     return access_token
+
+
 # access_token = get_app_access_token()
 # print(access_token)
 
-# -----------------------------------------------------------------------------------------------------------------------
 
 def get_users(login_names):
     params = {
@@ -51,8 +49,6 @@ user_test = get_users(data["watchlist"])
 print('User: ', user_test)
 
 
-# -----------------------------------------------------------------------------------------------------------------------
-
 def get_profile_image(login_names):
     params = {
         "login": login_names
@@ -75,7 +71,6 @@ profile_pictures = get_profile_image(data["watchlist"])
 print('Profile Pictures: ', profile_pictures)
 
 
-# -----------------------------------------------------------------------------------------------------------------------
 
 def get_streams(users):
     params = {
@@ -98,7 +93,6 @@ users_test = get_users(data["watchlist"])
 stream_test = get_streams(users_test)
 print('Stream: ', stream_test)
 
-# -----------------------------------------------------------------------------------------------------------------------
 
 online_users = []
 
