@@ -4,10 +4,10 @@ from datetime import datetime
 import requests
 
 
-with open("data.json", 'r') as data_file:
+with open("data.json", 'r', encoding='UTF-8') as data_file:
     data = json.load(data_file)
 
-with open('config.json', 'r') as config_file:
+with open('config.json', 'r', encoding='UTF-8') as config_file:
     config = json.load(config_file)
 
 
@@ -33,7 +33,7 @@ def get_users(login_names):
     }
 
     headers = {
-        "Authorization": "Bearer {}".format(config["access_token"]),
+        "Authorization": f'Bearer {config["access_token"]}',
         "Client-Id": config["client_id"]
     }
 
@@ -55,13 +55,13 @@ def get_profile_image(login_names):
     }
 
     headers = {
-        "Authorization": "Bearer {}".format(config["access_token"]),
+        "Authorization": f'Bearer {config["access_token"]}',
         "Client-Id": config["client_id"]
     }
 
     response = requests.get(
         "https://api.twitch.tv/helix/users",
-        params=params, 
+        params=params,
         headers=headers
     )
     return {entry["login"]: entry["profile_image_url"] for entry in response.json()["data"]}
@@ -71,19 +71,18 @@ profile_pictures = get_profile_image(data["watchlist"])
 print('Profile Pictures: ', profile_pictures)
 
 
-
 def get_streams(users):
     params = {
         "user_id": users.values()
     }
 
     headers = {
-        "Authorization": "Bearer {}".format(config["access_token"]),
+        "Authorization": f'Bearer {config["access_token"]}',
         "Client-Id": config["client_id"]
     }
     response = requests.get(
-        "https://api.twitch.tv/helix/streams", 
-        params=params, 
+        "https://api.twitch.tv/helix/streams",
+        params=params,
         headers=headers
     )
     return {entry["user_login"]: entry for entry in response.json()["data"]}
@@ -105,8 +104,8 @@ def get_notifications():
     notifications = []
     for user_name in data["watchlist"]:
         if user_name in streams and user_name not in online_users:
-            t = datetime.strptime(streams[user_name]['started_at'], "%Y-%m-%dT%H:%M:%SZ")
-            started_at = time.mktime(t.timetuple()) + t.microsecond / 1E6
+            giga_time = datetime.strptime(streams[user_name]['started_at'], "%Y-%m-%dT%H:%M:%SZ")
+            started_at = time.mktime(giga_time.timetuple()) + giga_time.microsecond / 1E6
             print(time.time() - started_at)
             if time.time() - started_at < 180:
                 notifications.append(streams[user_name])
