@@ -1,4 +1,3 @@
-from cgitb import text
 import json
 import datetime
 from textwrap import dedent
@@ -112,7 +111,6 @@ async def help(ctx):
     name='check_streams_one_message',
     aliases=['streamcheck', 'checkstreams', 'check']
 )
-@commands.is_owner()
 async def check_streams_one_message(ctx):
 
     with open('data.json', 'r', encoding='UTF-8') as data_file:
@@ -132,6 +130,7 @@ async def check_streams_one_message(ctx):
     )
     if streams:
         for stream in streams.values():
+
             embed.add_field(
                 name=f'Name : {stream["user_name"]}',
                 value=dedent(
@@ -139,6 +138,7 @@ async def check_streams_one_message(ctx):
                         **Title :** __{stream["title"]}__
                         **Viewer :** ``{stream["viewer_count"]}``
                         **Game :** ``{stream["game_name"]}``
+                        **Streamt seit:** ``{stream["started_at"][11:][:5]} Uhr am {stream["started_at"][8:][:2]}.{stream["started_at"][5:][:2]}.{stream["started_at"][:4]}``
                         **Link :** https://www.twitch.tv/{stream["user_login"]}
                         >-------------------------------------------------------------------------<
                     """
@@ -327,8 +327,9 @@ async def check_twitch_online_streamers():
             f'https://twitch.tv/{notification["user_login"]}', embed=embed
         )
 
+
 @bot.event
-async def on_command_error(self, ctx, error):
+async def on_command_error(ctx, error):
     if hasattr(ctx.command, 'on_error'):
         return
 
@@ -337,7 +338,7 @@ async def on_command_error(self, ctx, error):
     if isinstance(error, commands.CommandNotFound):
         if isinstance(error, commands.CommandNotFound):
             embed = discord.Embed(
-                description=f'**Unbekannter Command!** Überprüfe deine Eingabe mit `tv!help`',
+                description='**Unbekannter Command!** Überprüfe deine Eingabe mit `tv!help`',
                 color=discord.Color.red()
             )
             await ctx.send(embed=embed)
