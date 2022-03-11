@@ -3,9 +3,9 @@ import datetime
 from textwrap import dedent
 
 import asyncio
-import discord
-from discord.ext import commands
-from discord.ext.tasks import loop
+import disnake
+from disnake.ext import commands
+from disnake.ext.tasks import loop
 
 from twitch import get_notifications
 from twitch import get_streams
@@ -16,7 +16,7 @@ from twitch import get_profile_image
 running = False
 
 
-bot = commands.Bot(command_prefix='tv!', intents=discord.Intents.all())
+bot = commands.Bot(command_prefix='tv!', intents=disnake.Intents.all())
 bot.remove_command('help')
 
 
@@ -31,25 +31,25 @@ async def on_ready():
         check_twitch_online_streamers.start()
         running = True
     await bot.change_presence(
-        activity=discord.Activity(
-            type=discord.ActivityType.watching,
+        activity=disnake.Activity(
+            type=disnake.ActivityType.watching,
             name='tv!ping | to check if im alive'),
-        status=discord.Status.online)
+        status=disnake.Status.online)
 
 
 
 @bot.command()
 async def ping(ctx):
-    embed = discord.Embed(description=f'Pong | My Ping: **{round(bot.latency * 1000)}ms**')
+    embed = disnake.Embed(description=f'Pong | My Ping: **{round(bot.latency * 1000)}ms**')
     await ctx.send(embed=embed)
 
 
 
 @bot.command()
 async def help(ctx):
-    embed = discord.Embed(
+    embed = disnake.Embed(
         description=f'Help Command | My Ping: **{round(bot.latency * 1000)}ms**',
-        color=discord.Color.blurple(),
+        color=disnake.Color.blurple(),
         timestamp=datetime.datetime.utcnow()
     )
     embed.add_field(
@@ -119,7 +119,7 @@ async def check_streams_one_message(ctx):
     users = get_users(data_file["watchlist"])
     streams = get_streams(users)
 
-    embed = discord.Embed(color=discord.Color.purple())
+    embed = disnake.Embed(color=disnake.Color.purple())
     embed.set_author(
         name='Who is Live?',
         icon_url='https://static-cdn.jtvnw.net/jtv_user_pictures/8a6381c7-d0c0-4576-b179-38bd5ce1d6af-profile_image-300x300.png',
@@ -172,19 +172,19 @@ async def addstreamer(ctx, add_streamer=None):
         data = json.load(data_file)
 
     if not add_streamer:
-        missing_streamer_embed = discord.Embed(
+        missing_streamer_embed = disnake.Embed(
             description='**Bitte gebe ein Streamer an.**',
-            color=discord.Color.red()
+            color=disnake.Color.red()
         )
         await ctx.send(embed=missing_streamer_embed, delete_adter=5)
         await ctx.message.delete()
         return
 
     elif add_streamer in data["watchlist"]:
-        embed = discord.Embed(
+        embed = disnake.Embed(
             title=':x: ERROR',
             description=f'`Der Streamer ({add_streamer})` ist **bereits in der Watchlist!**',
-            color=discord.Color.red()
+            color=disnake.Color.red()
         )
         await ctx.send(embed=embed, delete_after=5)
         await ctx.message.delete()
@@ -194,7 +194,7 @@ async def addstreamer(ctx, add_streamer=None):
         with open("data.json", "w", encoding='UTF-8') as data_file:
             json.dump(data, data_file, indent=4)
 
-        embed = discord.Embed(
+        embed = disnake.Embed(
             title=':white_check_mark: Watchlist Add',
             descripton=dedent(
                 f"""
@@ -202,7 +202,7 @@ async def addstreamer(ctx, add_streamer=None):
                     `{add_streamer}`
                 """
             ),
-            color=discord.Color.green()
+            color=disnake.Color.green()
         )
         await ctx.send(embed=embed, delete_after=5)
         await ctx.message.delete()
@@ -217,19 +217,19 @@ async def remove_streamer(ctx, removestreamer=None):
         data = json.load(data_file)
 
     if not removestreamer:
-        missing_streamer_embed = discord.Embed(
+        missing_streamer_embed = disnake.Embed(
             description='**Bitte gebe ein Streamer an.**',
-            color=discord.Color.red()
+            color=disnake.Color.red()
         )
         await ctx.send(embed=missing_streamer_embed, delete_after=5)
         await ctx.message.delete()
         return
 
     elif removestreamer not in data["watchlist"]:
-        embed = discord.Embed(
+        embed = disnake.Embed(
             title=':x: ERROR',
             description=f'`Der Streamer ({removestreamer})` ist **nicht in der Watchlist!**',
-            color=discord.Color.red()
+            color=disnake.Color.red()
         )
         await ctx.send(embed=embed, delete_after=5)
         await ctx.message.delete()
@@ -240,7 +240,7 @@ async def remove_streamer(ctx, removestreamer=None):
         with open("data.json", "w", encoding='UTF-8') as data_file:
             json.dump(data, data_file, indent=4)
 
-        embed = discord.Embed(
+        embed = disnake.Embed(
             title=':white_check_mark: Watchlist Remove',
             description=dedent(
                 f"""
@@ -248,7 +248,7 @@ async def remove_streamer(ctx, removestreamer=None):
                     `{removestreamer}`
                 """
             ),
-            color=discord.Color.green()
+            color=disnake.Color.green()
         )
         await ctx.send(embed=embed, delete_after=5)
         await ctx.message.delete()
@@ -263,20 +263,20 @@ async def streamer(ctx):
     streamer_watchlist = data["watchlist"]
 
     if not streamer_watchlist:
-        embed = discord.Embed(
+        embed = disnake.Embed(
             title=':x: **ERROR**',
             description='`Es ist kein Streamer auf der Watchlist!`',
-            color=discord.Color.red()
+            color=disnake.Color.red()
         )
         await ctx.send(embed=embed, delete_after=5)
         await ctx.message.delete()
         return
 
     else:
-        embed = discord.Embed(
+        embed = disnake.Embed(
             title=':white_check_mark: Streamer Watchlist',
             description=f'`{data["watchlist"]}`',
-            color=discord.Color.green()
+            color=disnake.Color.green()
         )
         await ctx.send(embed=embed)
         return
@@ -299,7 +299,7 @@ async def check_twitch_online_streamers():
     profile_images = get_profile_image(data["watchlist"])
 
     for notification in notifications:
-        embed = discord.Embed(
+        embed = disnake.Embed(
             title=f'__{notification["title"]}__',
             description=dedent(
                 f"""
@@ -309,7 +309,7 @@ async def check_twitch_online_streamers():
             ),
             url=f'https://twitch.tv/{notification["user_login"]}',
             timestamp=datetime.datetime.utcnow(),
-            color=discord.Color.purple()
+            color=disnake.Color.purple()
         )
         embed.set_author(
             name=f'{notification["user_name"]} ist Live auf Twitch!',
@@ -337,9 +337,9 @@ async def on_command_error(ctx, error):
 
     if isinstance(error, commands.CommandNotFound):
         if isinstance(error, commands.CommandNotFound):
-            embed = discord.Embed(
+            embed = disnake.Embed(
                 description='**Unbekannter Command!** Überprüfe deine Eingabe mit `tv!help`',
-                color=discord.Color.red()
+                color=disnake.Color.red()
             )
             await ctx.send(embed=embed)
 
